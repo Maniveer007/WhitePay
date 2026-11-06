@@ -1,13 +1,13 @@
 // End-to-end test of the SaaS layer on the Whitechain testnet (needs `npm run testnet` running):
 // signup, plan limits, feature gates, per-tenant rate limit, suspension, operator console, upgrade-by-payment.
-const T = require("../support/testnet");
-const { ethers, until } = T;
-const B = T.API, PLATFORM = T.PLATFORM;
+const NET = require("../support/testnet");
+const { ethers, until } = NET;
+const B = NET.API, PLATFORM = NET.PLATFORM;
 const call = async (p, o = {}, key) => {
   const r = await fetch(B + p, { ...o, headers: { "content-type": "application/json", ...(key ? { authorization: "Bearer " + key } : {}) }, body: o.body && JSON.stringify(o.body) });
   return { status: r.status, body: await r.json().catch(() => ({})), headers: r.headers };
 };
-const sleep = T.sleep;
+const sleep = NET.sleep;
 const assert = (c, m) => { if (!c) { console.error("FAIL:", m); process.exit(1); } console.log("ok  ", m); };
 (async () => {
   const plans = (await call("/api/saas/plans")).body;
@@ -26,19 +26,15 @@ const assert = (c, m) => { if (!c) { console.error("FAIL:", m); process.exit(1);
 
   // ── Go live on-chain, then it activates by itself ──
   const cfg = (await call("/api/config")).body;
-  const rpc = T.provider;
+  const rpc = NET.provider;
   assert(cfg.chainId === 1874, "running against the Whitechain testnet (chain 1874)");
-  const [owner, buyer] = await T.fresh(2); // the new business's owner wallet, and a payer for the plan upgrade
+  const [owner, buyer] = await NET.fresh(2); // the new business's owner wallet, and a payer for the plan upgrade
   const payC = (w) => new ethers.Contract(cfg.pay, require("../../artifacts/contracts/WhitePay.sol/WhitePay.json").abi, w);
   const tok = (w) => new ethers.Contract(cfg.token, ["function mint(address,uint256)", "function approve(address,uint256)"], w);
   await (await payC(owner).registerMerchant(await owner.getAddress(), me0.merchant.signerAddress)).wait();
   assert(await until(async () => (await acct("/api/account/me", { token: session })).body.merchant.status === "active"), "on-chain registration activates the business");
 
-  // A developer creates their own API key in the console. That needs a confirmed email address.
-  assert((await acct("/api/merchants/me/rotate-key", { method: "POST", token: session, body: {} })).body.error?.code === "email_unverified", "creating an API key needs a confirmed email");
-  const mails = (await acct("/api/dev/mailbox?to=" + encodeURIComponent(email))).body;
-  const vtok = mails.find((m) => /verify-email\?token=/.test(m.body)).body.match(/token=([\w-]+)/)[1];
-  assert((await acct("/api/account/verify-email", { method: "POST", body: { token: vtok } })).status === 200, "the email is confirmed from the link we sent");
+  // A developer creates their own API key in the console (no email confirmation step).
   const KEY = (await acct("/api/merchants/me/rotate-key", { method: "POST", token: session, body: {} })).body.apiKey, T = (p, o) => call(p, o, KEY);
   assert(KEY?.startsWith("wp_test_"), "the owner creates an API key for their developer");
 
@@ -102,7 +98,7 @@ const assert = (c, m) => { if (!c) { console.error("FAIL:", m); process.exit(1);
   const fi = (await call("/api/intents/" + up.body.paymentId)).body, q = fi.quote;
   assert(q.merchantId === 1, "the upgrade is paid to the platform's own merchant, not to the tenant");
   assert((await T("/api/saas/usage")).body.plan.id === "free", "the plan does not change until the payment is made");
-  await T.ensureUsdt(buyer, 1_000_000_000n);
+  await NET.ensureUsdt(buyer, 1_000_000_000n);
   await (await tok(buyer).approve(cfg.pay, q.amount)).wait();
   await (await payC(buyer).pay([q.merchantId, q.intentId, q.token, q.amount, q.expiry], fi.signature)).wait();
   const upgraded = await until(async () => { const x = (await T("/api/saas/usage")).body; return x.plan.id === "growth" ? x : null; });

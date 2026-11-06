@@ -82,13 +82,16 @@ const ROUTES = [
 ];
 const areaOf = (path) => { for (const [re, a] of ROUTES) if (re.test(path)) return a; return null; };
 // Actions that need a verified email even for people who may otherwise do them.
+// Email confirmation is OFF by default (accounts work immediately: easy to try and demo). Set REQUIRE_EMAIL_VERIFICATION=1 to require it
+// before inviting people, creating API keys or paying for a plan.
+const REQUIRE_VERIFIED = process.env.REQUIRE_EMAIL_VERIFICATION === "1";
 const NEEDS_VERIFIED = [/^\/api\/team\/invite$/, /^\/api\/merchants\/me\/rotate-key$/, /^\/api\/saas\/upgrade$/];
 
 /** May this role do `method path`? Returns null if allowed, or a reason string. */
 function authorize(role, method, path, { emailVerified = true } = {}) {
   const acc = ACCESS[role];
   if (!acc) return "Unknown role";
-  if (!emailVerified && method !== "GET" && NEEDS_VERIFIED.some((re) => re.test(path))) return "Verify your email address first";
+  if (REQUIRE_VERIFIED && !emailVerified && method !== "GET" && NEEDS_VERIFIED.some((re) => re.test(path))) return "Verify your email address first";
   const area = areaOf(path);
   if (!area) return method === "GET" || method === "HEAD" ? null : (["owner", "admin", "api"].includes(role) ? null : `${ROLE_LABEL[role] || role} can't do this`);
   const need = method === "GET" || method === "HEAD" ? "r" : "w";
@@ -252,7 +255,8 @@ function mount(app) {
     db.prepare("UPDATE merchants SET email=?, plan='free' WHERE uid=?").run(email, created.uid);
     const user = newUser({ email, name, password: b.password });
     addMember(user.id, created.uid, "owner");
-    sendVerification(user);
+    if (REQUIRE_VERIFIED) sendVerification(user);
+    else db.prepare("UPDATE users SET email_verified=1 WHERE id=?").run(user.id); // no confirmation step unless asked for
     audit(created.uid, { id: user.id, label: name }, "account.created", { business }, req.ip);
     res.status(201);
     return { token: createSession(user, created.uid, req), user: publicUser(user) };
@@ -385,7 +389,7 @@ function mount(app) {
     if (role === "owner" && req.role !== "owner") throw bad(403, "forbidden", "Only an owner can make someone an owner");
   };
   app.post("/api/team/invite", sessionAuth, need("owner", "admin"), rateLimit(20), (req, res) => send(res, () => {
-    if (!req.user.email_verified) throw bad(403, "email_unverified", "Verify your email address first");
+    if (REQUIRE_VERIFIED && !req.user.email_verified) throw bad(403, "email_unverified", "Verify your email address first");
     const email = normEmail(req.body?.email), role = String(req.body?.role || "");
     assignable(req, role);
     const existing = userBy(email);
@@ -396,7 +400,8 @@ function mount(app) {
     sendMail(email, `${req.user.name || "A colleague"} invited you to ${biz} on WhitePay`, mailBody([`${req.user.name || "A colleague"} invited you to join ${biz} on WhitePay as ${ROLE_LABEL[role]}.`, `Accept the invitation:\n${WEB()}/invite/${token}`, "The link works for 7 days."]), "invite");
     audit(req.merchantUid, who(req), "team.invited", { email, role }, req.ip);
     res.status(201);
-    return { ok: true, email, role };
+    // The link is returned so the inviter can share it directly (chat, WhatsApp): no mail server needed to add a teammate.
+    return { ok: true, email, role, link: `${WEB()}/invite/${token}` };
   }));
   app.post("/api/team/invites/cancel", sessionAuth, need("owner", "admin"), (req, res) => send(res, () => {
     db.prepare("UPDATE account_tokens SET used_at=? WHERE id=? AND merchant_uid=? AND kind='invite'").run(realNow(), Number(req.body?.id), req.merchantUid);
@@ -459,7 +464,7 @@ function mount(app) {
     const email = normEmail(req.body?.email);
     const token = issueToken("invite", { merchantUid: m.uid, email, role: "owner", invitedBy: null, ttl: INVITE_TTL });
     sendMail(email, `You're invited to run ${m.name} on WhitePay`, mailBody([`You've been invited to manage ${m.name} on WhitePay as Owner.`, `Accept the invitation:\n${WEB()}/invite/${token}`]), "invite");
-    return { ok: true };
+    return { ok: true, link: `${WEB()}/invite/${token}` };
   }));
 
   // ── Local development only: read the emails the server would have sent ──

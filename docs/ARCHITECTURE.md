@@ -32,7 +32,7 @@
 | Plan and billing | edit | view | – | – | – | – |
 | Activity log | view | view | – | – | – | – |
 
-Other rules: only an owner can create or remove an owner; a business always keeps at least one owner; changing someone's role or removing them signs them out immediately; inviting people, creating API keys and paying for a plan need a confirmed email. Every change is recorded in the **activity log** (who, what, when, from where; never passwords or keys).
+Other rules: only an owner can create or remove an owner; a business always keeps at least one owner; changing someone's role or removing them signs them out immediately; email confirmation is off by default so the product is easy to try (set `REQUIRE_EMAIL_VERIFICATION=1` to require a confirmed email before inviting people, creating API keys or paying for a plan). Invitations return a link the inviter can copy, so no email is needed to onboard a teammate. Every change is recorded in the **activity log** (who, what, when, from where; never passwords or keys).
 
 Moving money onchain (refunds, plan creation, split contracts) is signed with the person's **own wallet** in the browser. The server never holds those keys, so the contract's own limits (refund operator limits, payout timelock) apply on top of the role.
 

@@ -47,17 +47,20 @@ const assert = (c, m) => { if (!c) { console.error("FAIL:", m); process.exit(1);
   assert(resumed.runs === 3 && resumed.nextRun > (await j("/api/test-clock")).now, "resuming skips the paused period instead of back-billing");
 
   // ── A real payment, then statements ──
+  // The chain is persistent: subscriptions from earlier runs may still be charging, so measure the INCREASE caused by this payment.
+  const rev0 = BigInt((await j("/api/statements?format=json")).summary.revenue);
   const it = await j("/api/intents", { method: "POST", body: { amount: 25, currency: "USD", description: "Stmt", policy: "seen", orderRef: "ext_" + Date.now() } });
   const fi = await j("/api/intents/" + it.id), q = fi.quote;
   await (await tok(human).approve(cfg.pay, q.amount)).wait();
   await (await pay(human).pay([q.merchantId, q.intentId, q.token, q.amount, q.expiry], fi.signature)).wait();
-  const stJson = await until(async () => { const x = await j("/api/statements?format=json"); return BigInt(x.summary.revenue) >= 25_000_000n && x; }) || await j("/api/statements?format=json");
-  assert(BigInt(stJson.summary.revenue) >= 25_000_000n, "statement summary counts the payment as revenue");
+  const stJson = await until(async () => { const x = await j("/api/statements?format=json"); return BigInt(x.summary.revenue) - rev0 >= 25_000_000n && x; }, 90) || await j("/api/statements?format=json");
+  assert(BigInt(stJson.summary.revenue) - rev0 >= 25_000_000n, "statement summary counts the payment as revenue");
   const xl = Buffer.from(await (await raw("/api/statements?format=xlsx")).arrayBuffer());
   assert(xl.slice(0, 2).toString() === "PK" && xl.includes("xl/workbook.xml") && xl.includes("xl/worksheets/sheet2.xml"), "xlsx export is a valid workbook zip");
   const pdf = Buffer.from(await (await raw("/api/statements?format=pdf")).arrayBuffer());
   assert(pdf.slice(0, 5).toString() === "%PDF-" && pdf.includes("%%EOF"), "pdf export is a PDF");
   const xero = await (await raw("/api/statements?format=xero")).text();
+  if (!(xero.includes('"1010"') && xero.includes('"4000"'))) console.log("xero output was:\n" + xero.slice(0, 500));
   assert(xero.startsWith('"*Narration",') && xero.includes('"1010"') && xero.includes('"4000"'), "xero journal CSV uses account codes");
   const qb = await (await raw("/api/statements?format=quickbooks")).text();
   assert(qb.startsWith('"JournalNo"') && qb.includes("USDT Wallet"), "quickbooks journal CSV uses account names");
@@ -175,7 +178,8 @@ const assert = (c, m) => { if (!c) { console.error("FAIL:", m); process.exit(1);
   const subTx = await (await pay(human).subscribe(1, cfg.token, 30_000_000n, 30 * 86400, nowTs + 365 * 86400, 300_000_000n)).wait();
   const subId = Number(pay(human).interface.parseLog(subTx.logs.find((l) => { try { return pay(human).interface.parseLog(l).name === "SubscriptionCreated"; } catch { return false; } })).args.subId);
   await (await pay(human).charge(subId)).wait();
-  const sq = await until(async () => { const x = await j(`/api/subscriptions/${subId}/refund-quote`); return x.lastCharge === "30000000" ? x : null; });
+  const sq = await until(async () => { const x = await j(`/api/subscriptions/${subId}/refund-quote?at=${nowTs + 5}`); return x.lastCharge === "30000000" ? x : null; });
+
   assert(sq && sq.maxRefundable === "30000000" && BigInt(sq.suggested) > 29_000_000n, "refund quote suggests nearly the whole charge right after charging");
   const half = await j(`/api/subscriptions/${subId}/refund-quote?at=${sq.periodStart + 15 * 86400}`);
   assert(Math.abs(Number(half.suggested) - 15_000_000) < 20_000, "halfway through the period the suggested refund is about half");
@@ -183,17 +187,17 @@ const assert = (c, m) => { if (!c) { console.error("FAIL:", m); process.exit(1);
   assert(late.suggested === "0", "after the period ends nothing is left to refund");
   await (await tok(owner).approve(cfg.pay, 12_000_000n)).wait();
   await (await pay(owner).refundSubscription(subId, 12_000_000n, ethers.encodeBytes32String("other"))).wait();
-  const after = await until(async () => { const x = await j(`/api/subscriptions/${subId}/refund-quote`); return x.alreadyRefunded === "12000000" ? x : null; });
+  const after = await until(async () => { const x = await j(`/api/subscriptions/${subId}/refund-quote?at=${nowTs + 5}`); return x.alreadyRefunded === "12000000" ? x : null; });
   assert(after && after.maxRefundable === "18000000", "the indexer records the refund and lowers what can still be refunded");
   const recon = await until(async () => { const r = await j("/api/reconcile"); return r.ok ? r : null; }, 20);
   assert(recon, "reconciliation still balances with a subscription refund in the ledger");
-  const evs = await j("/api/events?after_id=0&limit=100");
-  assert(evs.some((e) => e.type === "subscription.refunded"), "a subscription.refunded webhook event is emitted");
+  const evs = await until(async () => { const e = await j("/api/events?after_id=0&limit=500"); return e.some((x) => x.type === "subscription.refunded") ? e : null; });
+  assert(evs, "a subscription.refunded webhook event is emitted");
 
   // ── Marketplace: deploy a splitter from the artifact the dashboard uses, make it the payout, pay, sweep, return, release ──
   const art = await j("/api/splitter-artifact");
   assert(art.bytecode?.length > 100 && art.abi?.length, "the server serves the compiled splitter for in-browser deployment");
-  const HOLD = 40, ownerAddr = await owner.getAddress(), feeAddr = await agent.getAddress(), originalPayout = cfg.payout;
+  const HOLD = 120, ownerAddr = await owner.getAddress(), feeAddr = await agent.getAddress(), originalPayout = cfg.payout;
   const splitter = await (await new ethers.ContractFactory(art.abi, art.bytecode, owner).deploy(ownerAddr, ownerAddr, [feeAddr], [1000], HOLD)).waitForDeployment();
   const spAddr = await splitter.getAddress();
   const spInfo = await j("/api/splitters/" + spAddr);

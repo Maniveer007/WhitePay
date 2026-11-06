@@ -83,14 +83,7 @@ const PW = "Correct-horse-battery-9";
   assert((await web("/auth/signup", { method: "POST", headers: json, body: { businessName: "Weak Co", name: "Wendy Weak", email: `weak${Date.now()}@shop.test`, password: "password123" } })).status === 400, "a weak password is refused");
   const mine = jar(cookieOf(su, "wp_session"));
   const pend = await (await web("/console", { headers: { cookie: mine } })).text();
-  assert(pend.includes("Finish setup") && pend.includes("confirm your email"), "a new business sees the wallet step and a prompt to confirm their email");
-
-  // ── Email confirmation ──
-  const vm = await mailTo(email, /verify-email\?token=/);
-  const vtok = vm.body.match(/token=([\w-]+)/)[1];
-  const vp = await (await web(`/verify-email?token=${vtok}`)).text();
-  assert(vp.includes("Email confirmed"), "the link in the email confirms the address");
-  assert((await (await web(`/verify-email?token=${vtok}`)).text()).includes("didn't work"), "the same link can't be used twice");
+  assert(pend.includes("Finish setup") && !pend.includes("confirm your email"), "a new business sees the wallet step, with no email-confirmation prompt");
 
   // ── Forgot and reset password ──
   assert((await web("/auth/public/forgot", { method: "POST", headers: json, body: { email } })).status === 200, "forgot-password accepts the request");
@@ -105,8 +98,9 @@ const PW = "Correct-horse-battery-9";
   // ── Roles in the console: the owner invites a viewer and a finance person ──
   const invite = async (role) => {
     const em = `${role}${Date.now()}@shop.test`;
-    assert((await web("/bff/team/invite", { method: "POST", headers: { ...json, cookie: session, origin: W }, body: { email: em, role } })).status === 201, `the owner invites a ${role} from the console`);
-    const im = await mailTo(em, /\/invite\//), itok = im.body.match(/\/invite\/([\w-]+)/)[1];
+    const ir = await web("/bff/team/invite", { method: "POST", headers: { ...json, cookie: session, origin: W }, body: { email: em, role } });
+    assert(ir.status === 201, `the owner invites a ${role} from the console`);
+    const itok = (await ir.json()).link.split("/invite/")[1]; // the link comes back in the response
     assert((await (await web(`/invite/${itok}`)).text()).includes("Join "), `the invitation page for the ${role} renders`);
     const acc = await web("/auth/accept-invite", { method: "POST", headers: json, body: { token: itok, name: `Sam ${role}`, password: "Invited-person-2026" } });
     assert(acc.status === 201 && cookieOf(acc, "wp_session"), `the ${role} joins and is signed in`);

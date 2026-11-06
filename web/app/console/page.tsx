@@ -24,7 +24,6 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ d
 
   // A checklist in plain language, showing only the steps this person can act on.
   const steps: [string, boolean, string?][] = [
-    ["Confirm your email address", a.user.emailVerified],
     ["Connect your payout wallet", m.status === "active"],
     ...(a.access.settings === "w" ? [["Add your business details (tax ID, address)", !!(m.branding.taxId || m.branding.address), "/console/settings"] as [string, boolean, string]] : []),
     ...(a.access.payments === "w" ? [["Create your first payment link", paid.length > 0 || payments.length > 0, "/console/payments"] as [string, boolean, string]] : []),

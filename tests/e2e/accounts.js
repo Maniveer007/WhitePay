@@ -41,16 +41,11 @@ const totp = (secret, t = Date.now() / 1000) => { const c = Buffer.alloc(8); c.w
   assert((await call("/api/account/signup", { method: "POST", body: { businessName: "X Co", name: "Other Person", email: email.toUpperCase(), password: pw } })).status === 409, "the same email can't register twice");
   let tok = su.body.token;
   let me = (await call("/api/account/me", { token: tok })).body;
-  assert(me.role === "owner" && me.merchant.name === "Amara Textiles" && me.merchant.status === "pending" && me.access.team === "w" && !me.user.emailVerified, "the new person is the owner of a pending business, with email not yet verified");
+  assert(me.role === "owner" && me.merchant.name === "Amara Textiles" && me.merchant.status === "pending" && me.access.team === "w" && me.user.emailVerified, "the new person is the owner of a pending business and can use the account straight away (no email confirmation)");
 
-  // ── Email verification ──
-  const vm = await mail(email, /verify-email\?token=/);
-  assert(vm && /Confirm your email/.test(vm.subject), "a verification email is sent");
-  const vt = tokenIn(vm, /verify-email\?token=([\w-]+)/);
-  assert((await call("/api/team/invite", { method: "POST", token: tok, body: { email: "x@y.test", role: "viewer" } })).body.error?.code === "email_unverified", "inviting people needs a verified email");
-  assert((await call("/api/account/verify-email", { method: "POST", body: { token: vt } })).status === 200, "the verification link works");
-  assert((await call("/api/account/verify-email", { method: "POST", body: { token: vt } })).body.error?.code === "invalid_token", "a verification link can't be used twice");
-  assert((await call("/api/account/me", { token: tok })).body.user.emailVerified === true, "the account shows as verified");
+  // ── No confirmation step: a brand-new owner can invite people immediately ──
+  const quick = await call("/api/team/invite", { method: "POST", token: tok, body: { email: `quick${stamp}@shop.test`, role: "viewer" } });
+  assert(quick.status === 201 && quick.body.link?.includes("/invite/"), "a new owner can invite someone straight away and gets a shareable link");
 
   // ── Sign in, lockout, no account enumeration ──
   const wrong = await call("/api/account/login", { method: "POST", body: { email, password: "Wrong-password-1" }, ip: "203.0.113.1" });
@@ -115,9 +110,9 @@ const totp = (secret, t = Date.now() / 1000) => { const c = Buffer.alloc(8); c.w
   const roles = ["admin", "finance", "support", "developer", "viewer"], sessions = {};
   for (const role of roles) {
     const em = `${role}${stamp}@shop.test`;
-    assert((await call("/api/team/invite", { method: "POST", token: owner, body: { email: em, role } })).status === 201, `the owner invites a ${role}`);
-    const im = await mail(em, /\/invite\//);
-    const itok = tokenIn(im, /\/invite\/([\w-]+)/);
+    const invRes = await call("/api/team/invite", { method: "POST", token: owner, body: { email: em, role } });
+    assert(invRes.status === 201, `the owner invites a ${role}`);
+    const itok = invRes.body.link.split("/invite/")[1]; // the link comes back in the response: no mail needed
     const prev = (await call("/api/account/invite/" + itok)).body;
     assert(prev.role === role && prev.business && prev.hasAccount === false, `the invitation page shows the business and role (${role})`);
     const acc = await call("/api/account/invite/accept", { method: "POST", body: { token: itok, name: `Sam ${role}`, password: "Invited-person-2026" } });
@@ -173,9 +168,8 @@ const totp = (secret, t = Date.now() / 1000) => { const c = Buffer.alloc(8); c.w
 
   // ── One person, several businesses (an accountant) ──
   const acct = (await call("/api/account/login", { method: "POST", body: { email: resetEmail, password: "Third-passphrase-99" }, ip: "203.0.113.30" })).body.token;
-  await call("/api/team/invite", { method: "POST", token: owner, body: { email: resetEmail, role: "viewer" } });
-  const am = await mail(resetEmail, /\/invite\//);
-  const atok = tokenIn(am, /\/invite\/([\w-]+)/);
+  const ai = await call("/api/team/invite", { method: "POST", token: owner, body: { email: resetEmail, role: "viewer" } });
+  const atok = ai.body.link.split("/invite/")[1];
   assert((await call("/api/account/invite/" + atok)).body.hasAccount === true, "an invitation to an existing account says so");
   assert((await call("/api/account/invite/accept", { method: "POST", body: { token: atok, password: "wrong-password" } })).status === 401, "joining with an existing account needs its password");
   const joined = await call("/api/account/invite/accept", { method: "POST", body: { token: atok, password: "Third-passphrase-99" } });
@@ -197,9 +191,9 @@ const totp = (secret, t = Date.now() / 1000) => { const c = Buffer.alloc(8); c.w
   // ── Operator can hand a platform-created tenant to its first owner ──
   const op = await call("/api/platform/merchants", { method: "POST", token: PLATFORM_KEY, body: { name: `Platform Made ${stamp}` } });
   const oe = `first${stamp}@shop.test`;
-  assert((await call(`/api/platform/tenants/${op.body.uid}/invite-owner`, { method: "POST", token: PLATFORM_KEY, body: { email: oe } })).status === 200, "an operator can invite the first owner of a platform-created business");
-  const om = await mail(oe, /\/invite\//);
-  const oacc = await call("/api/account/invite/accept", { method: "POST", body: { token: tokenIn(om, /\/invite\/([\w-]+)/), name: "First Owner", password: "Invited-person-2026" } });
+  const io = await call(`/api/platform/tenants/${op.body.uid}/invite-owner`, { method: "POST", token: PLATFORM_KEY, body: { email: oe } });
+  assert(io.status === 200 && io.body.link, "an operator can invite the first owner of a platform-created business");
+  const oacc = await call("/api/account/invite/accept", { method: "POST", body: { token: io.body.link.split("/invite/")[1], name: "First Owner", password: "Invited-person-2026" } });
   assert((await call("/api/account/me", { token: oacc.body.token })).body.role === "owner", "…who becomes its owner");
 
   console.log("\nAccount checks passed.");

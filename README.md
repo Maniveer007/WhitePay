@@ -70,7 +70,7 @@ One server hosts many businesses (tenants). People sign in with **email and pass
 npm run testnet              # see "Run it" above. Then open http://localhost:3001
 #   first owner login for the platform's own business: BOOTSTRAP_OWNER_EMAIL / BOOTSTRAP_OWNER_PASSWORD in .env.testnet
 #   operator console: /admin with PLATFORM_KEY from .env.testnet
-#   emails (confirm, reset, invite) are readable at http://localhost:3000/api/dev/mailbox?to=<email> while DEV_MAILBOX=1 (set by `npm run testnet`)
+#   sign-up needs no email confirmation (REQUIRE_EMAIL_VERIFICATION=1 turns it on); emails (reset, invite) are readable at http://localhost:3000/api/dev/mailbox?to=<email> while DEV_MAILBOX=1 (set by `npm run testnet`)
 ```
 
 **For people (owners, finance, support, auditors)**

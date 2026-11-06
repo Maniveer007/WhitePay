@@ -254,7 +254,7 @@ const assert = (c, m) => { if (!c) { console.error("FAIL:", m); process.exit(1);
   const idemA = await (await fetch(B + "/api/v1/payments", { method: "POST", headers: { "content-type": "application/json", authorization: "Bearer " + KEY, "idempotency-key": "shared-key" }, body: '{"amount":2}' })).json();
   const idemB = (await jb("/api/v1/payments", { method: "POST", headers: { "idempotency-key": "shared-key" }, body: { amount: 2 } })).body;
   assert(idemA.id !== idemB.id, "the same Idempotency-Key in two merchants doesn't collide");
-  await T.until(async () => (await jb("/api/v1/webhooks")).body.length > 0, 30);
+  await T.until(async () => { const h = (await jb("/api/v1/webhooks")).body; return h.length > 0 && h.every((x) => x.status === "no_endpoint"); }, 40);
   const hooksB = (await jb("/api/v1/webhooks")).body;
   assert(hooksB.length && hooksB.every((h) => h.status === "no_endpoint"), "B's webhooks wait for B's own endpoint (none set), never sent to A's");
   const upd = (await jb("/api/v1/merchants/me", { method: "POST", body: { name: "Bazaar Seller B", color: "#16a34a", webhookUrl: "ftp://bad" } }));
@@ -264,6 +264,7 @@ const assert = (c, m) => { if (!c) { console.error("FAIL:", m); process.exit(1);
 
   const rec = await T.until(async () => { const r = await j("/api/reconcile"); return r.ok ? r : null; }, 60) || await j("/api/reconcile");
   assert(rec.ok, "ledger reconciles with chain " + JSON.stringify(rec.ledger));
+  await T.until(async () => (await j("/api/webhooks")).some((h) => h.status === "delivered"), 40);
   const hooks = await j("/api/webhooks");
   assert(hooks.some((h) => h.status === "delivered"), "webhooks delivered: " + hooks.filter((h) => h.status === "delivered").length + "/" + hooks.length);
   const demo = await j("/api/_demo_webhook");

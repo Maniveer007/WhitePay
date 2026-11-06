@@ -16,6 +16,7 @@ export function TeamManager({ data, me, myRole }: { data: TeamData; me: string; 
   const [msg, setMsg] = useState<{ kind: "ok" | "bad"; text: string } | null>(null);
   const [busy, setBusy] = useState(false);
   const [role, setRole] = useState("finance");
+  const [link, setLink] = useState<string | null>(null);
   const label = (id: string) => data.roles.find((r) => r.id === id)?.label ?? id;
   const assignable = data.roles.filter((r) => r.id !== "owner" || myRole === "owner");
 
@@ -25,12 +26,14 @@ export function TeamManager({ data, me, myRole }: { data: TeamData; me: string; 
   }
   async function invite(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault(); const f = new FormData(e.currentTarget), email = String(f.get("email"));
-    await act(() => bff("team/invite", { body: { email, role } }), `Invitation sent to ${email}. They'll get an email with a link that works for 7 days.`);
+    setLink(null);
+    await act(async () => { const r = await bff<{ link: string }>("team/invite", { body: { email, role } }); setLink(r.link); }, `Invitation created for ${email}. Share the link below (it works for 7 days); we also try to email it.`);
     (e.target as HTMLFormElement).reset();
   }
   return (
     <>
       {msg ? <Notice kind={msg.kind}>{msg.text}</Notice> : null}
+      {link ? <Notice kind="ok">Invitation link: <span className="mono">{link}</span> <button className="btn secondary sm" onClick={() => navigator.clipboard.writeText(link)}>Copy</button></Notice> : null}
       <Card title="People">
         <Table head={["Person", "Role", "Security", "Last sign-in", ""]}>
           {data.members.map((m) => (
