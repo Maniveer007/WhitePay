@@ -1,0 +1,49 @@
+{
+  "name": "whitepay",
+  "version": "1.0.0",
+  "description": "Non-custodial USDT business payments on Whitechain",
+  "main": "index.js",
+  "scripts": {
+    "test": "hardhat test",
+    "compile": "hardhat compile",
+    "deploy:testnet": "ENV_FILE=.env.testnet hardhat run scripts/deploy.js --network whitechainTestnet",
+    "start": "node scripts/testnet.js --prod",
+    "start:testnet": "ENV_FILE=.env.testnet node server/index.js",
+    "check:testnet": "ENV_FILE=.env.testnet node scripts/check-network.js",
+    "check:i18n": "node tests/checks/i18n.js",
+    "check:openapi": "node tests/checks/openapi.js",
+    "build:openapi": "node scripts/build-openapi.js",
+    "test:e2e": "node tests/e2e/core.js",
+    "test:e2e:ext": "node tests/e2e/extensions.js",
+    "test:e2e:saas": "node tests/e2e/saas.js",
+    "test:e2e:accounts": "node tests/e2e/accounts.js",
+    "test:e2e:web": "node tests/e2e/web.js",
+    "test:e2e:cli": "node tests/e2e/cli-mcp.js",
+    "test:e2e:notify": "node tests/e2e/notify.js",
+    "test:sdks": "sdks/test-all.sh",
+    "test:all": "tests/run-all.sh",
+    "web:install": "npm --prefix web install",
+    "web:dev": "npm --prefix web run dev",
+    "web:build": "npm --prefix web run build",
+    "web:start": "npm --prefix web run start",
+    "testnet": "node scripts/testnet.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "dotenv": "^18.0.9",
+    "ethers": "^6.17.0",
+    "express": "^4.22.3"
+  },
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^5.0.0",
+    "@openzeppelin/contracts": "^5.0.2",
+    "hardhat": "^2.29.1"
+  },
+  "bin": {
+    "whitepay": "cli/whitepay.js",
+    "whitepay-mcp": "mcp/server.js"
+  }
+}

@@ -1,0 +1,13 @@
+node_modules
+artifacts
+cache
+data
+data-*
+.env
+.env.*
+!.env.example
+sdks
+plugins
+test
+docs/*
+!docs/openapi.json
