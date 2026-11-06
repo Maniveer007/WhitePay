@@ -265,7 +265,7 @@ async function tick() {
     }
     await updateFinality(head, fin.tags);
     kv.set("head", head);
-    kv.set("lastSync", now());
+    kv.set("lastSync", Math.floor(Date.now() / 1000));
     kv.set("rpcOk", 1);
   } catch (e) {
     kv.set("rpcOk", 0);

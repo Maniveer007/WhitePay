@@ -24,9 +24,10 @@ function mount(app) {
   });
 
   app.get("/api/status", (_req, res) => {
-    const lag = now() - Number(kv.get("lastSync", 0));
+    const real = Math.floor(Date.now() / 1000); // real time: the off-chain test clock must not make the chain look stalled
+    const lag = real - Number(kv.get("lastSync", 0));
     // Whitechain makes a block every ~1s: an old head block means the sequencer (or our RPC) is stalled.
-    const blockAge = now() - Number(kv.get("headTs", 0));
+    const blockAge = real - Number(kv.get("headTs", 0));
     const sequencerStalled = blockAge > Number(process.env.STALL_SECONDS || 30);
     res.json({ head: Number(kv.get("head", 0)), cursor: Number(kv.get("cursor", 0)), rpcOk: kv.get("rpcOk") === "1",
       safeHead: Number(kv.get("safeHead", 0)) || null, finalizedHead: Number(kv.get("finalizedHead", 0)) || null,
