@@ -1,0 +1,8 @@
+{
+  "name": "whitepay/whitepay-php",
+  "description": "WhitePay SDK for PHP 8.1+: non-custodial USDT payments on Whitechain",
+  "type": "library",
+  "license": "MIT",
+  "require": { "php": ">=8.1", "ext-curl": "*", "ext-json": "*" },
+  "autoload": { "psr-4": { "WhitePay\\": "src/" } }
+}

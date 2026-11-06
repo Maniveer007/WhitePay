@@ -1,0 +1,10 @@
+{
+  "name": "@whitepay/vue",
+  "version": "0.1.0",
+  "description": "Vue 3 pay button for the WhitePay checkout widget",
+  "type": "module",
+  "main": "src/index.js",
+  "peerDependencies": { "vue": ">=3.2" },
+  "scripts": { "test": "node --test test/*.test.js" },
+  "license": "MIT"
+}

@@ -1,0 +1,11 @@
+{
+  "name": "@whitepay/react",
+  "version": "0.1.0",
+  "description": "React pay button and hook for the WhitePay checkout widget",
+  "type": "module",
+  "main": "src/index.js",
+  "types": "src/index.d.ts",
+  "peerDependencies": { "react": ">=17" },
+  "scripts": { "test": "node --test test/*.test.js" },
+  "license": "MIT"
+}

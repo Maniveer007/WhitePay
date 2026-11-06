@@ -1,0 +1,77 @@
+{
+  "tolerance": 300,
+  "cases": [
+    {
+      "name": "valid",
+      "secret": "whsec_test_vectors",
+      "body": "{\"id\":\"evt_1\",\"type\":\"payment.fulfillable\",\"created\":1793750000,\"data\":{\"id\":\"pay_abc\",\"amount\":\"49000000\",\"status\":\"safe\"}}",
+      "header": "t=1793750000,v1=8ac0cfb99debf04f52e794097af404b0f14ed3b995c3bcc924fe1a9e07230950",
+      "now": 1793750010,
+      "valid": true
+    },
+    {
+      "name": "valid_with_rotated_second_signature",
+      "secret": "whsec_test_vectors",
+      "body": "{\"id\":\"evt_1\",\"type\":\"payment.fulfillable\",\"created\":1793750000,\"data\":{\"id\":\"pay_abc\",\"amount\":\"49000000\",\"status\":\"safe\"}}",
+      "header": "t=1793750000,v1=3c184018ab913ee37ef8b010993c95e2575e3a3f4f01c9c3bfb5f9690b09584b,v1=8ac0cfb99debf04f52e794097af404b0f14ed3b995c3bcc924fe1a9e07230950",
+      "now": 1793750000,
+      "valid": true
+    },
+    {
+      "name": "tampered_body",
+      "secret": "whsec_test_vectors",
+      "body": "{\"id\":\"evt_1\",\"type\":\"payment.fulfillable\",\"created\":1793750000,\"data\":{\"id\":\"pay_abc\",\"amount\":\"1\",\"status\":\"safe\"}}",
+      "header": "t=1793750000,v1=8ac0cfb99debf04f52e794097af404b0f14ed3b995c3bcc924fe1a9e07230950",
+      "now": 1793750000,
+      "valid": false
+    },
+    {
+      "name": "wrong_secret",
+      "secret": "whsec_test_vectors",
+      "body": "{\"id\":\"evt_1\",\"type\":\"payment.fulfillable\",\"created\":1793750000,\"data\":{\"id\":\"pay_abc\",\"amount\":\"49000000\",\"status\":\"safe\"}}",
+      "header": "t=1793750000,v1=ee4ec81de961c7bedbd1fa1dcf82642454fdb67531c360e1e76a4572d0c8236d",
+      "now": 1793750000,
+      "valid": false
+    },
+    {
+      "name": "too_old",
+      "secret": "whsec_test_vectors",
+      "body": "{\"id\":\"evt_1\",\"type\":\"payment.fulfillable\",\"created\":1793750000,\"data\":{\"id\":\"pay_abc\",\"amount\":\"49000000\",\"status\":\"safe\"}}",
+      "header": "t=1793750000,v1=8ac0cfb99debf04f52e794097af404b0f14ed3b995c3bcc924fe1a9e07230950",
+      "now": 1793750301,
+      "valid": false
+    },
+    {
+      "name": "from_the_future",
+      "secret": "whsec_test_vectors",
+      "body": "{\"id\":\"evt_1\",\"type\":\"payment.fulfillable\",\"created\":1793750000,\"data\":{\"id\":\"pay_abc\",\"amount\":\"49000000\",\"status\":\"safe\"}}",
+      "header": "t=1793750000,v1=8ac0cfb99debf04f52e794097af404b0f14ed3b995c3bcc924fe1a9e07230950",
+      "now": 1793749699,
+      "valid": false
+    },
+    {
+      "name": "missing_timestamp",
+      "secret": "whsec_test_vectors",
+      "body": "{\"id\":\"evt_1\",\"type\":\"payment.fulfillable\",\"created\":1793750000,\"data\":{\"id\":\"pay_abc\",\"amount\":\"49000000\",\"status\":\"safe\"}}",
+      "header": "v1=8ac0cfb99debf04f52e794097af404b0f14ed3b995c3bcc924fe1a9e07230950",
+      "now": 1793750000,
+      "valid": false
+    },
+    {
+      "name": "garbage_header",
+      "secret": "whsec_test_vectors",
+      "body": "{\"id\":\"evt_1\",\"type\":\"payment.fulfillable\",\"created\":1793750000,\"data\":{\"id\":\"pay_abc\",\"amount\":\"49000000\",\"status\":\"safe\"}}",
+      "header": "nonsense",
+      "now": 1793750000,
+      "valid": false
+    },
+    {
+      "name": "empty_header",
+      "secret": "whsec_test_vectors",
+      "body": "{\"id\":\"evt_1\",\"type\":\"payment.fulfillable\",\"created\":1793750000,\"data\":{\"id\":\"pay_abc\",\"amount\":\"49000000\",\"status\":\"safe\"}}",
+      "header": "",
+      "now": 1793750000,
+      "valid": false
+    }
+  ]
+}

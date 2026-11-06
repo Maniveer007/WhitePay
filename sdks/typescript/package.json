@@ -1,0 +1,11 @@
+{
+  "name": "@whitepay/sdk",
+  "version": "0.1.0",
+  "description": "WhitePay SDK for Node.js 18+ and edge runtimes: non-custodial USDT payments on Whitechain",
+  "type": "module",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "engines": { "node": ">=18" },
+  "scripts": { "test": "node --test test/*.test.ts" },
+  "license": "MIT"
+}

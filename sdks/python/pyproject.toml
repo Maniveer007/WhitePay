@@ -1,0 +1,11 @@
+[project]
+name = "whitepay"
+version = "0.1.0"
+description = "WhitePay SDK for Python 3.8+: non-custodial USDT payments on Whitechain"
+requires-python = ">=3.8"
+license = { text = "MIT" }
+dependencies = []
+
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
