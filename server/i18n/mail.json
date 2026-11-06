@@ -1,0 +1,65 @@
+{
+ "en": {
+  "mail.invoice.subject": "Invoice {number} from {merchant}",
+  "mail.invoice.body": "Hello {client},\n\n{merchant} has sent you invoice {number} for {amount}, due {date}.\n\nView and pay securely in USDT: {url}",
+  "mail.reminder.due_soon.subject": "Reminder: invoice {number} is due {date}",
+  "mail.reminder.overdue.subject": "Overdue: invoice {number} ({amount} outstanding)",
+  "mail.reminder.body": "Hello {client},\n\nInvoice {number} from {merchant} has {amount} outstanding, due {date}.\n\nPay here: {url}",
+  "mail.paid.subject": "Payment received: invoice {number}",
+  "mail.paid.body": "Hello {client},\n\nThank you. {merchant} has received your payment for invoice {number}. Balance due: {balance}.\n\nInvoice, receipts and on-chain proof: {url}"
+ },
+ "hi": {
+  "mail.invoice.subject": "{merchant} की ओर से इनवॉइस {number}",
+  "mail.invoice.body": "नमस्ते {client},\n\n{merchant} ने आपको {amount} का इनवॉइस {number} भेजा है, जो {date} तक देय है।\n\nUSDT में सुरक्षित रूप से देखें और भुगतान करें: {url}",
+  "mail.reminder.due_soon.subject": "याद दिलाना: इनवॉइस {number} {date} तक देय है",
+  "mail.reminder.overdue.subject": "समय-सीमा पार: इनवॉइस {number} ({amount} बकाया)",
+  "mail.reminder.body": "नमस्ते {client},\n\n{merchant} के इनवॉइस {number} पर {amount} बकाया है, देय तिथि {date}।\n\nयहां भुगतान करें: {url}",
+  "mail.paid.subject": "भुगतान मिला: इनवॉइस {number}",
+  "mail.paid.body": "नमस्ते {client},\n\nधन्यवाद। {merchant} को इनवॉइस {number} के लिए आपका भुगतान मिल गया है। बकाया राशि: {balance}।\n\nइनवॉइस, रसीदें और ऑनचेन प्रमाण: {url}"
+ },
+ "ta": {
+  "mail.invoice.subject": "{merchant} அனுப்பிய விலைப்பட்டியல் {number}",
+  "mail.invoice.body": "வணக்கம் {client},\n\n{merchant} உங்களுக்கு {amount} மதிப்புள்ள விலைப்பட்டியல் {number}-ஐ அனுப்பியுள்ளார்; {date}-க்குள் செலுத்த வேண்டும்.\n\nUSDT-இல் பாதுகாப்பாகப் பார்த்துச் செலுத்துங்கள்: {url}",
+  "mail.reminder.due_soon.subject": "நினைவூட்டல்: விலைப்பட்டியல் {number} {date}-க்குள் செலுத்த வேண்டும்",
+  "mail.reminder.overdue.subject": "காலம் கடந்தது: விலைப்பட்டியல் {number} ({amount} நிலுவை)",
+  "mail.reminder.body": "வணக்கம் {client},\n\n{merchant}-இன் விலைப்பட்டியல் {number}-இல் {amount} நிலுவையில் உள்ளது; செலுத்த வேண்டிய தேதி {date}.\n\nஇங்கே செலுத்துங்கள்: {url}",
+  "mail.paid.subject": "கட்டணம் பெறப்பட்டது: விலைப்பட்டியல் {number}",
+  "mail.paid.body": "வணக்கம் {client},\n\nநன்றி. விலைப்பட்டியல் {number}-க்கான உங்கள் கட்டணத்தை {merchant} பெற்றுக்கொண்டார். நிலுவைத் தொகை: {balance}.\n\nவிலைப்பட்டியல், ரசீதுகள் மற்றும் ஆன்செயின் சான்று: {url}"
+ },
+ "te": {
+  "mail.invoice.subject": "{merchant} నుండి ఇన్‌వాయిస్ {number}",
+  "mail.invoice.body": "నమస్తే {client},\n\n{merchant} మీకు {amount} విలువైన ఇన్‌వాయిస్ {number} పంపారు, {date} లోగా చెల్లించాలి.\n\nUSDTలో సురక్షితంగా చూసి చెల్లించండి: {url}",
+  "mail.reminder.due_soon.subject": "గుర్తు: ఇన్‌వాయిస్ {number} గడువు {date}",
+  "mail.reminder.overdue.subject": "గడువు దాటింది: ఇన్‌వాయిస్ {number} ({amount} బాకీ)",
+  "mail.reminder.body": "నమస్తే {client},\n\n{merchant} ఇన్‌వాయిస్ {number}పై {amount} బాకీ ఉంది, గడువు {date}.\n\nఇక్కడ చెల్లించండి: {url}",
+  "mail.paid.subject": "చెల్లింపు అందింది: ఇన్‌వాయిస్ {number}",
+  "mail.paid.body": "నమస్తే {client},\n\nధన్యవాదాలు. ఇన్‌వాయిస్ {number}కి మీ చెల్లింపు {merchant}కి అందింది. బాకీ మొత్తం: {balance}.\n\nఇన్‌వాయిస్, రసీదులు మరియు ఆన్‌చెయిన్ రుజువు: {url}"
+ },
+ "mr": {
+  "mail.invoice.subject": "{merchant} कडून इन्व्हॉइस {number}",
+  "mail.invoice.body": "नमस्कार {client},\n\n{merchant} यांनी तुम्हाला {amount} चे इन्व्हॉइस {number} पाठवले आहे, देय तारीख {date}.\n\nUSDT मध्ये सुरक्षितपणे पाहा आणि भरा: {url}",
+  "mail.reminder.due_soon.subject": "आठवण: इन्व्हॉइस {number} {date} पर्यंत देय आहे",
+  "mail.reminder.overdue.subject": "मुदत उलटली: इन्व्हॉइस {number} ({amount} थकीत)",
+  "mail.reminder.body": "नमस्कार {client},\n\n{merchant} यांच्या इन्व्हॉइस {number} वर {amount} थकीत आहे, देय तारीख {date}.\n\nयेथे भरा: {url}",
+  "mail.paid.subject": "पेमेंट मिळाले: इन्व्हॉइस {number}",
+  "mail.paid.body": "नमस्कार {client},\n\nधन्यवाद. इन्व्हॉइस {number} साठी तुमचे पेमेंट {merchant} यांना मिळाले आहे. थकीत रक्कम: {balance}.\n\nइन्व्हॉइस, पावत्या आणि ऑनचेन पुरावा: {url}"
+ },
+ "bn": {
+  "mail.invoice.subject": "{merchant} থেকে ইনভয়েস {number}",
+  "mail.invoice.body": "নমস্কার {client},\n\n{merchant} আপনাকে {amount}-এর ইনভয়েস {number} পাঠিয়েছেন, দেয় তারিখ {date}।\n\nUSDT-তে নিরাপদে দেখুন ও পরিশোধ করুন: {url}",
+  "mail.reminder.due_soon.subject": "মনে করিয়ে দেওয়া: ইনভয়েস {number} {date}-এর মধ্যে দেয়",
+  "mail.reminder.overdue.subject": "মেয়াদ পেরিয়েছে: ইনভয়েস {number} ({amount} বকেয়া)",
+  "mail.reminder.body": "নমস্কার {client},\n\n{merchant}-এর ইনভয়েস {number}-এ {amount} বকেয়া, দেয় তারিখ {date}।\n\nএখানে পরিশোধ করুন: {url}",
+  "mail.paid.subject": "পেমেন্ট পাওয়া গেছে: ইনভয়েস {number}",
+  "mail.paid.body": "নমস্কার {client},\n\nধন্যবাদ। ইনভয়েস {number}-এর জন্য আপনার পেমেন্ট {merchant} পেয়েছেন। বকেয়া: {balance}।\n\nইনভয়েস, রসিদ ও অনচেইন প্রমাণ: {url}"
+ },
+ "ar": {
+  "mail.invoice.subject": "فاتورة {number} من {merchant}",
+  "mail.invoice.body": "مرحباً {client}،\n\nأرسل إليك {merchant} الفاتورة {number} بمبلغ {amount}، تستحق في {date}.\n\nاعرضها وادفع بأمان بـ USDT: {url}",
+  "mail.reminder.due_soon.subject": "تذكير: الفاتورة {number} تستحق في {date}",
+  "mail.reminder.overdue.subject": "متأخرة: الفاتورة {number} (مستحق {amount})",
+  "mail.reminder.body": "مرحباً {client}،\n\nعلى الفاتورة {number} من {merchant} مبلغ مستحق قدره {amount}، تاريخ الاستحقاق {date}.\n\nادفع هنا: {url}",
+  "mail.paid.subject": "تم استلام الدفعة: الفاتورة {number}",
+  "mail.paid.body": "مرحباً {client}،\n\nشكراً لك. استلم {merchant} دفعتك للفاتورة {number}. الرصيد المستحق: {balance}.\n\nالفاتورة والإيصالات والإثبات على السلسلة: {url}"
+ }
+}
